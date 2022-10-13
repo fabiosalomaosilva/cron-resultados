@@ -17,7 +17,6 @@ class App {
   }
 
   private middlewares(): void {
-    this.express.use(express.json());
     this.express.use(cors());
   }
 
@@ -28,6 +27,9 @@ class App {
 
   private getResults() {
     buscaResultado.buscaTodaNoite();
+    this.express.get('/', (req, res) => {
+      return res.send('Serviço CRON JOB running 🔥🔥');
+    });
   }
 }
 
