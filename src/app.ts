@@ -23,6 +23,7 @@ class App {
 
   private database(): void {
     mongoose.connect(process.env.MONGO_DB as string);
+    console.log('MongoDB connected!!')
   }
 
   private getResults() {
