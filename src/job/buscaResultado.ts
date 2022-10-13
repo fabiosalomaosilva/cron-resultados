@@ -7,6 +7,7 @@ import { addHours, isAfter, isEqual, parse } from "date-fns";
 class BuscaResultado {
   async buscaTodaNoite() {
     cron.schedule("*/15 20-21 * * *", () => {
+      console.log("Job foi iniciado...");
         this.saveResult();
     });
   }
@@ -49,6 +50,7 @@ class BuscaResultado {
     } else {
         console.log('Não vai processar nada; Rateio já processado....')
     }  
+    console.log("Job finalizado...");
   }
 }
 
