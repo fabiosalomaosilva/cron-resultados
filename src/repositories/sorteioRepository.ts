@@ -19,7 +19,7 @@ class SorteioRepository {
 
   async removeSorteio(id: any) {
     try {
-      const d =await SorteioModel.deleteOne(id);
+      await SorteioModel.deleteOne(id);
     } catch (error) {
       console.log(error);
     }
