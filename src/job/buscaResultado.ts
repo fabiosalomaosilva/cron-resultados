@@ -2,11 +2,11 @@ import cron from "node-cron";
 import { Sorteio } from "../models/sorteio";
 import sorteioRepository from "../repositories/sorteioRepository";
 import buscaResultadoService from "../services/buscaResultadoService";
-import { addHours, isAfter, isEqual, parse } from "date-fns";
+import { addHours, isAfter, isEqual, parse, addDays } from "date-fns";
 
 class BuscaResultado {
   async buscaTodaNoite() {
-    cron.schedule("*/15 0,23 * * *", () => {
+    cron.schedule("*/15 1,23 * * *", () => {
       console.log('Job foi iniciado as ' + new Date().toTimeString() + '...');
         this.saveResult();
     });
@@ -15,7 +15,6 @@ class BuscaResultado {
   private async saveResult() {
     const last = await sorteioRepository.getLastSorteio();
     console.log("Pegou dados na API");
-    console.log(last);
 
     const today = new Date().toLocaleDateString();
     const currentDate = parse(today, "MM/dd/yyyy", new Date());
@@ -25,7 +24,7 @@ class BuscaResultado {
       new Date()
     );
 
-    if (isEqual(nextDt, currentDate)) {
+    if (isEqual(nextDt, currentDate) || isEqual(nextDt, addDays(currentDate, 1))) {
       const sorteio = await buscaResultadoService.getResultado("megasena", last.numero_concurso);
 
       if (sorteio as Sorteio) {
