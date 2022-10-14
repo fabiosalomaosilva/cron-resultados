@@ -6,8 +6,8 @@ import { addHours, isAfter, isEqual, parse } from "date-fns";
 
 class BuscaResultado {
   async buscaTodaNoite() {
-    cron.schedule("*/15 20-21 * * *", () => {
-      console.log("Job foi iniciado...");
+    cron.schedule("*/15 0,23 * * *", () => {
+      console.log('Job foi iniciado as ' + new Date().toTimeString() + '...');
         this.saveResult();
     });
   }
