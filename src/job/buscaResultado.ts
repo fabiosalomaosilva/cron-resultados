@@ -6,49 +6,47 @@ import { addHours, isAfter, isEqual, parse, addDays } from "date-fns";
 
 class BuscaResultado {
   async buscaTodaNoite() {
-    cron.schedule("*/15 1,23 * * *", () => {
-      console.log('Job foi iniciado as ' + new Date().toTimeString() + '...');
-        this.saveResult();
+    cron.schedule("*/15 0,23 * * *", () => {
+      console.log("Job foi iniciado as " + new Date().toTimeString() + "...");
+      this.saveResult();
     });
   }
 
   private async saveResult() {
-    const last = await sorteioRepository.getLastSorteio();
-    console.log("Pegou dados na API");
-
-    const today = new Date().toLocaleDateString();
-    const currentDate = parse(today, "MM/dd/yyyy", new Date());
-    const nextDt = parse(
-      addHours(last.data_proximo_concurso, 2).toLocaleDateString(),
-      "MM/dd/yyyy",
-      new Date()
+    const sorteioBancoDados = await sorteioRepository.getLastSorteio();
+    const sorteioApi = await buscaResultadoService.getResultado(
+      "megasena",
+      sorteioBancoDados.numero_concurso + 1
     );
+    console.log("Pegou dados no banco de dados e na API...");
 
-    if (isEqual(nextDt, currentDate) || isEqual(nextDt, addDays(currentDate, 1))) {
-      const sorteio = await buscaResultadoService.getResultado("megasena", last.numero_concurso);
-
-      if (sorteio as Sorteio) {
-        const sorteioValido = sorteio as Sorteio;
-        if (sorteioValido.numero_concurso !== last.numero_concurso) {
-            const result = await sorteioRepository.addSorteio(sorteio);
-            console.log("Sorteio n° " + result.numero_concurso + " foi parcialmente incluído no BD!");
-          }      }
-    }    
-
-    if (isAfter(nextDt, currentDate) && !last.rateio_processamento) {
-        const sorteio = await buscaResultadoService.getResultado("megasena", last.numero_concurso);
-        if (sorteio as Sorteio) {
-            const sorteioValido = sorteio as Sorteio;    
-            if (sorteioValido.rateio_processamento) {
-                const result = await sorteioRepository.editSorteio(sorteioValido);
-                if(result){
-                    console.log("Sorteio n° " + sorteioValido.numero_concurso + " foi totalente incluído no BD!");
-                }
-            }
+    if (sorteioApi as Sorteio) {
+      const sorteioValido = sorteioApi as Sorteio;
+      if (sorteioBancoDados.numero_concurso < sorteioValido.numero_concurso) {
+        const result = await sorteioRepository.addSorteio(sorteioApi);
+        if (result.rateio_processamento) {
+          console.log("Sorteio n° " + result.numero_concurso + " foi parcialmente incluído no BD!");
+        } else {
+          console.log("Sorteio n° " + result.numero_concurso + " foi incluído no BD!");
         }
-    } else {
-        console.log('Não vai processar nada; Rateio já processado....')
-    }  
+      }else{
+        console.log("Sorteio n° " + sorteioBancoDados.numero_concurso + " já havia sido incluído no BD!");
+      }
+
+
+      if (
+        sorteioBancoDados.numero_concurso === sorteioValido.numero_concurso &&
+        sorteioBancoDados.rateio_processamento
+      ) {
+        const result = await sorteioRepository.editSorteio(sorteioValido);
+        if (result) {
+          console.log("Sorteio n° " + sorteioValido.numero_concurso + " foi totalente incluído no BD!");
+        }
+      } else {
+        console.log("Não vai processar nada; Rateio já processado....");
+      }
+    }
+    await sorteioRepository.removeDuplicados();
     console.log("Job finalizado...");
   }
 }

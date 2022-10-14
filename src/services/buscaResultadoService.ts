@@ -21,14 +21,12 @@ class BuscaResultadoService {
     } else {
       url = `${pathMegaSena}&concurso=${numeroSorteio}&token=${token}`;
     }
-    console.log(url)
     let resposta: Sorteio | null = null;
 
     try{
         const response = await this.api.get<Sorteio>(url);
         resposta = response.data;
         await sorteioRepository.addSorteio(resposta)
-        console.log(resposta)
     } catch(error){
         console.log(error);
     }
