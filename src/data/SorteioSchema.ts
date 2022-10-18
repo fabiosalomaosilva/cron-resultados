@@ -82,5 +82,14 @@ const sorteioSchema = new Schema<Sorteio>(
       }
   );
 
+  sorteioSchema.index(
+    {
+      numero_concurso: 1,
+    },
+    {
+      unique: true,
+    },
+  );
+
   export const SorteioModel = mongoose.model('Sorteio', sorteioSchema);
 

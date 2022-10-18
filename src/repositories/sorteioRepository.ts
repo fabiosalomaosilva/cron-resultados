@@ -13,7 +13,7 @@ class SorteioRepository {
   }
 
   async getLastSorteio(): Promise<Sorteio> {
-    const obj = await SorteioModel.find().sort({data_concurso: -1}).limit(1);
+    const obj = await SorteioModel.find().sort({numero_concurso: -1}).limit(1);
     return obj[0];
   }
 
